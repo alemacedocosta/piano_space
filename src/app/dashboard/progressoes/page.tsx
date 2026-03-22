@@ -138,7 +138,7 @@ export default function ProgressoesPage() {
 
         <PianoKeyboard
           startOctave={4}
-          numOctaves={2}
+          octaves={2}
           highlightedNotes={highlighted}
           rootNote={activeChord.root}
           size="md"
