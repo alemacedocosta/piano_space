@@ -1,7 +1,3 @@
-// Piano space — Prisma Schema
-// Banco: PostgreSQL (Supabase)
-// Autenticação: NextAuth.js
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,22 +8,20 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ── Auth (NextAuth padrão) ────────────────────────────────────────────────────
-
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  password      String?   @db.Text
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts          Account[]
-  sessions          Session[]
-  userProgress      UserProgress[]
-  practiceStreak    PracticeStreak?
+  id                 String              @id @default(cuid())
+  name               String?
+  email              String?             @unique
+  emailVerified      DateTime?           @db.Timestamptz(6)
+  image              String?
+  createdAt          DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt          DateTime            @default(now()) @updatedAt @db.Timestamptz(6)
+  password           String?
+  paidAt             DateTime?           @db.Timestamptz(6)
+  accounts           Account[]
+  practiceStreak     PracticeStreak?
+  sessions           Session[]
+  userProgress       UserProgress[]
   virtualPianoConfig VirtualPianoConfig?
 }
 
@@ -37,15 +31,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([provider, providerAccountId])
 }
@@ -54,20 +47,91 @@ model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
   userId       String
-  expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime @db.Timestamptz(6)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model VerificationToken {
   identifier String
   token      String   @unique
-  expires    DateTime
+  expires    DateTime @db.Timestamptz(6)
 
   @@unique([identifier, token])
 }
 
-// ── Piano space Domain ────────────────────────────────────────────────────────
+model Lesson {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title         String
+  description   String
+  level         DifficultyLevel
+  videoUrl      String?
+  sheetMusicPdf String?
+  order         Int
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @default(now()) @updatedAt @db.Timestamptz(6)
+  userProgress  UserProgress[]
+
+  @@index([level])
+  @@index([order])
+}
+
+model Song {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  composer         String
+  difficultyRating Int            @default(1)
+  midiFileUrl      String?
+  bpmSuggested     Int?
+  createdAt        DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt        DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  userProgress     UserProgress[]
+
+  @@index([difficultyRating])
+}
+
+model UserProgress {
+  id              String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId          String
+  lessonId        String?        @db.Uuid
+  songId          String?        @db.Uuid
+  status          ProgressStatus @default(Started)
+  lastPracticedAt DateTime       @default(now()) @db.Timestamptz(6)
+  accuracyScore   Float?         @default(0)
+  starsEarned     Int            @default(0)
+  createdAt       DateTime       @default(now()) @db.Timestamptz(6)
+  updatedAt       DateTime       @default(now()) @updatedAt @db.Timestamptz(6)
+  lesson          Lesson?        @relation(fields: [lessonId], references: [id], onUpdate: NoAction)
+  song            Song?          @relation(fields: [songId], references: [id], onUpdate: NoAction)
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([userId, lessonId])
+  @@unique([userId, songId])
+  @@index([userId])
+  @@index([status])
+}
+
+model PracticeStreak {
+  id                    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId                String   @unique
+  currentStreak         Int      @default(0)
+  longestStreak         Int      @default(0)
+  totalMinutesPracticed Int      @default(0)
+  lastActiveDate        DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt             DateTime @default(now()) @updatedAt @db.Timestamptz(6)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([currentStreak])
+}
+
+model VirtualPianoConfig {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String       @unique
+  keyLabelMode      KeyLabelMode @default(Note)
+  showFingerNumbers Boolean      @default(false)
+  themeColorHex     String       @default("#75B390")
+  updatedAt         DateTime     @default(now()) @updatedAt @db.Timestamptz(6)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
 
 enum DifficultyLevel {
   Beginner
@@ -82,90 +146,6 @@ enum ProgressStatus {
 }
 
 enum KeyLabelMode {
-  Note    // C, D, E
-  Solfege // Dó, Ré, Mi
-}
-
-// Lição individual (conteúdo educacional)
-model Lesson {
-  id             String          @id @default(uuid())
-  title          String
-  description    String          @db.Text
-  level          DifficultyLevel
-  videoUrl       String?
-  sheetMusicPdf  String?
-  order          Int
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-
-  userProgress UserProgress[]
-
-  @@index([level])
-  @@index([order])
-}
-
-// Música / Peça para prática
-model Song {
-  id           String   @id @default(uuid())
-  title        String
-  composer     String
-  difficultyRating Int  @default(1)
-  midiFileUrl  String?
-  bpmSuggested Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  userProgress UserProgress[]
-
-  @@index([difficultyRating])
-}
-
-// Progresso do usuário (rastreia lições e músicas)
-model UserProgress {
-  id               String         @id @default(uuid())
-  userId           String
-  lessonId         String?
-  songId           String?
-  status           ProgressStatus @default(Started)
-  lastPracticedAt  DateTime       @default(now())
-  accuracyScore    Float?         @default(0)
-  starsEarned      Int            @default(0)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson Lesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  song   Song?   @relation(fields: [songId], references: [id], onDelete: SetNull)
-
-  @@unique([userId, lessonId])
-  @@unique([userId, songId])
-  @@index([userId])
-  @@index([status])
-}
-
-// Ofensiva / hábito diário
-model PracticeStreak {
-  id                   String   @id @default(uuid())
-  userId               String   @unique
-  currentStreak        Int      @default(0)
-  longestStreak        Int      @default(0)
-  totalMinutesPracticed Int     @default(0)
-  lastActiveDate       DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([currentStreak])
-}
-
-// Configurações do teclado virtual
-model VirtualPianoConfig {
-  id                String       @id @default(uuid())
-  userId            String       @unique
-  keyLabelMode      KeyLabelMode @default(Note)
-  showFingerNumbers Boolean      @default(false)
-  themeColorHex     String       @default("#75B390")
-  updatedAt         DateTime     @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Note
+  Solfege
 }

@@ -36,7 +36,7 @@ export default function CicloDasQuintasPage() {
   }
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-3xl">⭕</span>
@@ -62,8 +62,8 @@ export default function CicloDasQuintasPage() {
         <h2 className="text-lg font-bold text-navy mb-6">🔵 Diagrama interativo</h2>
         <div className="flex flex-col lg:flex-row gap-8 items-center">
           {/* SVG do ciclo */}
-          <div className="flex-shrink-0">
-            <svg width="400" height="400" viewBox="0 0 400 400">
+          <div className="w-full max-w-[400px] mx-auto lg:mx-0 lg:flex-shrink-0">
+            <svg width="100%" viewBox="0 0 400 400">
               {/* Anel externo — tons maiores */}
               {MAJOR_KEYS.map((key, i) => {
                 const pos = getPosition(i, radius);

@@ -59,7 +59,7 @@ export default function ProgressoesPage() {
   const highlighted = getChordNotes(activeChord.root, activeChord.type as keyof typeof import("@/lib/utils").CHORDS);
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-3xl">🎶</span>
@@ -107,7 +107,7 @@ export default function ProgressoesPage() {
         </div>
 
         {/* Os 3 acordes */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-6">
           {(["ii", "v", "i"] as ChordStep[]).map((step, idx) => {
             const info = CHORD_STEP_INFO[idx];
             const chordName = key[step];
@@ -116,17 +116,17 @@ export default function ProgressoesPage() {
               <button
                 key={step}
                 onClick={() => setActiveStep(step)}
-                className={`rounded-xl border-2 p-4 text-center transition-all ${
+                className={`rounded-xl border-2 p-2 sm:p-4 text-center transition-all ${
                   isActive
                     ? `${info.color} ${info.border} shadow-md scale-105`
                     : "bg-sand-light border-navy/10 hover:border-navy/30"
                 }`}
               >
-                <div className="text-xs font-semibold text-navy/50 uppercase tracking-wide mb-1">
-                  {info.label} grau — {info.role}
+                <div className="text-[10px] sm:text-xs font-semibold text-navy/50 uppercase tracking-wide mb-1 leading-tight">
+                  {info.label} — {info.role}
                 </div>
-                <div className="text-2xl font-bold text-navy mb-1">{chordName}</div>
-                <div className="text-xs text-navy/50">{info.desc}</div>
+                <div className="text-xl sm:text-2xl font-bold text-navy mb-1">{chordName}</div>
+                <div className="hidden sm:block text-xs text-navy/50">{info.desc}</div>
               </button>
             );
           })}
@@ -138,7 +138,7 @@ export default function ProgressoesPage() {
 
         <PianoKeyboard
           startOctave={4}
-          octaves={2}
+          numOctaves={2}
           highlightedNotes={highlighted}
           rootNote={activeChord.root}
           size="md"

@@ -37,7 +37,14 @@ export const authOptions: NextAuthOptions = {
         if (!user?.password) return null;
         const valid = verifyPassword(credentials.password, user.password);
         if (!valid) return null;
-        return { id: user.id, email: user.email!, name: user.name };
+        return {
+          id: user.id,
+          email: user.email!,
+          name: user.name,
+          // Campos extras para verificação de trial
+          createdAt: user.createdAt.toISOString(),
+          paidAt: user.paidAt?.toISOString() ?? null,
+        };
       },
     }),
   ],
@@ -46,12 +53,22 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.createdAt = (user as any).createdAt;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        token.paidAt = (user as any).paidAt;
+      }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as { id?: string }).id = token.id as string;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const u = session.user as any;
+        u.id = token.id as string;
+        u.createdAt = token.createdAt as string;
+        u.paidAt = token.paidAt as string | null;
       }
       return session;
     },

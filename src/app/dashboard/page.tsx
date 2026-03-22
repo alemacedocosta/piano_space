@@ -42,7 +42,7 @@ export default function DashboardHome() {
   const firstName = session?.user?.name?.split(" ")[0] ?? "Músico";
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       {/* Boas-vindas */}
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-navy mb-1">Olá, {firstName}! 👋</h1>

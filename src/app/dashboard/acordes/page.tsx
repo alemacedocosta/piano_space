@@ -35,7 +35,7 @@ export default function AcordesPage() {
   const chordName = `${NOTE_NAMES_EN[root]}${selectedChordInfo?.symbol ?? ""}`;
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <span className="text-3xl">🎹</span>
@@ -126,7 +126,7 @@ export default function AcordesPage() {
 
         <PianoKeyboard
           startOctave={4}
-          octaves={2}
+          numOctaves={2}
           highlightedNotes={highlighted}
           rootNote={root}
           size="md"
