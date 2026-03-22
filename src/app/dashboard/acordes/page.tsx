@@ -126,7 +126,7 @@ export default function AcordesPage() {
 
         <PianoKeyboard
           startOctave={4}
-          numOctaves={2}
+          octaves={2}
           highlightedNotes={highlighted}
           rootNote={root}
           size="md"
