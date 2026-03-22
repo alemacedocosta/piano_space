@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #75B390;
+  --color-primary-light: #D6EDE0;
+  --color-sand: #F0DDAA;
+  --color-sand-light: #FAF3E0;
+  --color-accent: #E47C5D;
+  --color-accent-light: #FAE8E2;
+  --color-crimson: #E32D40;
+  --color-navy: #152B3C;
+  --color-navy-light: #E8EDF1;
+}
+
+@layer base {
+  html {
+    font-family: Inter, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-sand-light text-navy;
+  }
+
+  * {
+    @apply border-navy-light;
+  }
+}
+
+@layer components {
+  /* Piano keyboard base styles */
+  .piano-white-key {
+    @apply relative bg-white border border-navy/20 rounded-key cursor-pointer
+           transition-all duration-75 select-none
+           hover:bg-primary-light active:bg-primary-light/60;
+    box-shadow: var(--tw-shadow, 0 4px 6px -1px rgba(21,43,60,0.15));
+  }
+
+  .piano-white-key.pressed {
+    @apply bg-primary-light;
+    box-shadow: var(--tw-shadow, 0 1px 3px rgba(21,43,60,0.2));
+    transform: translateY(2px);
+  }
+
+  .piano-black-key {
+    @apply absolute bg-navy rounded-b-sm cursor-pointer z-10
+           transition-all duration-75 select-none
+           hover:bg-navy-medium active:bg-navy/70;
+  }
+
+  .piano-black-key.pressed {
+    transform: translateY(2px);
+    @apply bg-navy/80;
+  }
+
+  /* Highlighted note */
+  .piano-white-key.highlighted {
+    @apply bg-primary/70 border-primary;
+  }
+
+  .piano-black-key.highlighted {
+    @apply bg-primary;
+  }
+
+  /* Root note */
+  .piano-white-key.root {
+    @apply bg-accent/60 border-accent;
+  }
+
+  .piano-black-key.root {
+    @apply bg-accent;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
